@@ -94,6 +94,9 @@ std::string SourceIdentification::calc_source(Network& contact_network, const st
 }
 
 std::string SourceIdentification::calc_source_with_infection_graph(Network& contact_network, const NodeSet& nodes_infected, const Parameter& para, const SrcIdnMethod& method) {
+	if (nodes_infected.size() == 1) {
+		return *(nodes_infected.begin());
+	}
 	switch (method) {
 		case SSE:	return calc_source_SSE(contact_network, nodes_infected);
 		case SSEBFS:return calc_source_SSEBFS(contact_network, nodes_infected);
@@ -249,10 +252,17 @@ std::string SourceIdentification::calc_source_JCE(Network& contact_network, cons
 	std::string temp_root = *(nodes_observed_infected.begin());
 	std::shared_ptr<BFSTree> spanning_tree = std::make_shared<BFSTree>(*merged_graph, temp_root, nodes_observed_infected);
 	NodeVec root_candidates;
-	for (int i = 0; i < spanning_tree->get_node_size(); ++i) {
-		std::string nodename = merged_graph->get_node_name(i);
-		if (merged_graph->get_degree(nodename) > 1) {
-			root_candidates.push_back(nodename);
+	if (spanning_tree->get_node_size() == 1) {
+		return spanning_tree->get_node_name(0);
+	} else if (spanning_tree->get_node_size() == 2) {
+		root_candidates.push_back(spanning_tree->get_node_name(0));
+		root_candidates.push_back(spanning_tree->get_node_name(1));
+	} else {
+		for (int i = 0; i < spanning_tree->get_node_size(); ++i) {
+			std::string nodename = spanning_tree->get_node_name(i);
+			if (spanning_tree->get_degree(nodename) > 1) {
+				root_candidates.push_back(nodename);
+			}
 		}
 	}
 	// Find a root from the candidates.
@@ -261,6 +271,7 @@ std::string SourceIdentification::calc_source_JCE(Network& contact_network, cons
 		std::cerr << "Error finding no root candidate." << std::endl;
 		exit(-1);
 	}
+
 	std::string root_name = root_candidates[Util::gen_rand_int(n)];
 
 	std::shared_ptr<BFSTree> tree = std::make_shared<BFSTree>(*spanning_tree, root_name);
