@@ -43,4 +43,6 @@ netjob_SOURCES=	main.cc\
 				bfs_tree.h\
 				bfs_tree.cc\
 				step_source_identification.h\
-				step_source_identification.cc
+				step_source_identification.cc\
+				step_source_identification_v2.h\
+				step_source_identification_v2.cc

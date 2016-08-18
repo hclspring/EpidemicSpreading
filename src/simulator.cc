@@ -31,6 +31,8 @@ std::vector<DiseaseStage> Simulator::get_sim_res(const Network& contact_network,
 		for (int part = 0; part < _network_parts; ++part) {
 			if (is_unstable(para.get_disease())) {
 				_stages = spread(_stages, contact_network, para, day % _network_days, part % _network_parts);
+			} else {
+				return _stages;
 			}
 		}
 	}

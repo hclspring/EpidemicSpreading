@@ -353,7 +353,7 @@ std::string SourceIdentification::calc_source_DMP_SIR_unknowntime(Network& conta
 		exit(-1);
 	}
 	if (para.get_disease() != SIR) {
-		std::cerr << "Error because disease is not SIR." << std::endl;
+		std::cerr << "Error because disease is not SIR but " << para.get_disease() << "." << std::endl;
 		exit(-1);
 	}
 	if (max_sim_days <= 0) {
