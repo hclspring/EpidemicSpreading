@@ -1021,7 +1021,7 @@ void SourceIdentification::DMP_calc_new_pis_stat_net(const Network& contact_netw
 std::string SourceIdentification::calc_source_MCSM_diffsimdays(Network& contact_network, const NodeSet& nodes_been_infected, const int& max_sim_days, const bool& fixed_sim_days, const Parameter& para) {
 	NodeVec potential_seeds = Util::unset2vec(nodes_been_infected);
 	int potential_seeds_count = potential_seeds.size();
-	int basic_repeat_times = potential_seeds_count * log(potential_seeds_count);
+	int basic_repeat_times = para.get_repeat_times();
 /*	if (!fixed_sim_days) {
 		basic_repeat_times *= potential_seeds_count;
 	}

@@ -58,6 +58,7 @@ int StepSourceIdentificationV2::run(const Parameter& para) {
 	} else {
 		idn_methods = {"sse", "ssebfs", "rg", "da", "ub", "dmp", "mcsm", "sleuth"};
 	}
+	//idn_methods = {"dmp", "mcsm"};
 	// Repeat simulation and source identification
 	std::vector<SourceIdentificationResV2> res_structs(idn_methods.size());
 	int repeat_times = para.get_repeat_times();
@@ -71,14 +72,22 @@ int StepSourceIdentificationV2::run(const Parameter& para) {
 	int n= net->get_node_size();
 	clock_t start_clock, end_clock;
 	for (int i = 0; i < repeat_times; ++i) {
-		// Init seed
-		int true_seed_index = Util::gen_rand_int(n);
-		std::string true_seed_node = net->get_node_name(true_seed_index);
-		IndexSet seed_set{true_seed_index};
-		// Init simulator
-		Simulator simulator(para, n, seed_set);
-		// Simulate the disease spreading
-		std::vector<DiseaseStage> sim_res = simulator.get_sim_res(*net, para);
+		std::cout << "Round " << i + 1 << "/" << repeat_times << std::endl;
+		std::string true_seed_node;
+		std::vector<DiseaseStage> sim_res;
+		int infected_count;
+		// get a simulation result which has at least 10 infected nodes.
+		do {
+			// Init seed
+			int true_seed_index = Util::gen_rand_int(n);
+			true_seed_node = net->get_node_name(true_seed_index);
+			IndexSet seed_set{true_seed_index};
+			// Init simulator
+			Simulator simulator(para, n, seed_set);
+			// Simulate the disease spreading
+			sim_res = simulator.get_sim_res(*net, para);
+			infected_count = Simulator::get_nodeset_been_infected_from_sim_res(sim_res, para.get_disease(), *net).size();
+		} while (infected_count < 10);
 		// try every possible method
 		for (int j = 0; j < idn_methods.size(); ++j) {
 			// Infer seed and record time usage
@@ -89,7 +98,7 @@ int StepSourceIdentificationV2::run(const Parameter& para) {
 			double error_distance = SourceIdentification::calc_error_distance(*net, true_seed_node, inferred_seed_node);
 			double detection_rate = SourceIdentification::calc_detection_rate(true_seed_node, inferred_seed_node);
 			double running_time = 1000.0 * (end_clock - start_clock) / CLOCKS_PER_SEC;
-			std::cout << "Round " << i + 1 << "/" << repeat_times << ", Method " << idn_methods[j] << ", Time " << running_time / 1000.0 << " s." << std::endl;
+			std::cout << "Method " << idn_methods[j] << ", Time " << running_time / 1000.0 << " s." << std::endl;
 			res_structs[j].running_times[i] = running_time;
 			res_structs[j].detection_rates[i] = detection_rate;
 			res_structs[j].error_distances[i] = error_distance;
