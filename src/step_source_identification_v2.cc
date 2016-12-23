@@ -21,8 +21,9 @@
 StepSourceIdentificationV2 StepSourceIdentificationV2::_step_source_identification_v2;
 
 StepSourceIdentificationV2::StepSourceIdentificationV2(): Runner() {
-	_short_options = "";
+	_short_options = "h";
 	_long_options = new struct option[100]{
+		{"help",		no_argument,		NULL, OPT_HELP},
 //		{"net_type",	required_argument,	NULL, OPT_NET_TYPE},
 		{"net_inroot",	required_argument,	NULL, OPT_NET_INROOT},
 //		{"net_injson",	required_argument,	NULL, OPT_NET_INJSON},
@@ -47,6 +48,27 @@ StepSourceIdentificationV2::StepSourceIdentificationV2(): Runner() {
 	};
 	RunnerManager::instance()->install("step_source_identification_v2", this);
 }
+
+void StepSourceIdentificationV2::help() {
+	std::cout << "\nFunctionality: source identification. In this version, different source identification methods are compared in the exactly same simulations, thus this version is better.\n";
+	std::cout << "Option list:\n";
+	std::cout << "\t* --help (or -h): [ no argument ] print this help information.\n";
+	std::cout << "\t* --net_inroot: [ string argument ] root directory or file of the network(s).\n";
+	std::cout << "\t* --out_dir: [ string argument ] output directory of the results.\n";
+	std::cout << "\t* --disease: [ string argument ] disease model of the problem, possible values are si, sis, sir, seir.\n";
+	std::cout << "\t* --infect_rate: [ double argument ] infect rate, should be in the range (0, 1).\n";
+	std::cout << "\t* --infect_rate_seconds: [ int/double argument ] duration of the parameter infect_rate, should be a positive value.\n";
+	std::cout << "\t* --recover_rate: [ double argument ] recover rate, should be in the range (0, 1).\n";
+	std::cout << "\t* --recover_rate_seconds: [ int/double argument ] duration of the parameter recover_rate, should be a positive value.\n";
+	std::cout << "\t* --seconds_per_weight: [ int/double argument ] duration denoted by unit weight on the edge, should be a positive value.\n";
+	std::cout << "\t* --seconds_per_step: [ int/double argument ] duration denoted by one step in the simulating process, should be a positive value.\n";
+	std::cout << "\t* --max_sim_days: [ int argument ] maximal simulating duration, should be a positive value. Simulation stops once simulating time reaches this value.\n";
+	std::cout << "\t* --repeat_times: [ int argument ] repeat times of simulation for every parameter setting, should be a positive value.\n";
+	//std::cout << "\t* --source_identification_method: [ string argument ] method of the source identification, possible values are sse, ssebfs, tse, msep, msepbfs, urcc, sjc, jce, mjc, rg, da, ub, aub, dmp, bp, mcsm, sleuth.\n";
+	//std::cout << "\t* --source_identification_knowntime: [ string argument ] denotes whether spreading time is supplied as input in the source identification problem, possible values are true, false.\n";
+	std::cout << std::endl;
+}
+
 
 int StepSourceIdentificationV2::run(const Parameter& para) {
 	// Read network

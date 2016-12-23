@@ -9,11 +9,13 @@
 Parameter::Parameter() {}
 
 Parameter::Parameter(const Parameter& para) {
+	this->_help = para._help;
 	this->_net_type = para._net_type;
 	this->_net_inroot = para._net_inroot;
 	this->_net_injson = para._net_injson;
 	this->_net_volunteers = para._net_volunteers;
 	this->_out_dir = para._out_dir;
+	this->_part_str_length = para._part_str_length;
 	this->_disease = para._disease;
 	this->_infect_rate = para._infect_rate;
 	this->_infect_rate_seconds = para._infect_rate_seconds;
@@ -30,6 +32,17 @@ Parameter::Parameter(const Parameter& para) {
 	this->_source_identification_method = para._source_identification_method;
 	this->_ub_r = para._ub_r;
 	this->_source_identification_knowntime = para._source_identification_knowntime;
+	this->_start_part = para._start_part;
+	this->_end_part = para._end_part;
+	this->_last_parts_threshold = para._last_parts_threshold;
+	this->_calc_edges = para._calc_edges;
+	this->_net_friendship = para._net_friendship;
+	this->_fd_func = para._fd_func;
+	this->_evolve_para_alpha = para._evolve_para_alpha;
+	this->_evolve_para_a = para._evolve_para_a;
+	this->_evolve_para_b = para._evolve_para_b;
+	this->_if = para._if;
+	this->_ie = para._ie;
 }
 
 Parameter::Parameter(int argc, char*const* argv, 
@@ -51,6 +64,7 @@ int Parameter::set_para(OptionKey opt_key, const std::string& opt_val) {
 		case OPT_NET_INJSON:				return set_net_injson(opt_val);
 		case OPT_NET_VOLUNTEERS:			return set_net_volunteers(opt_val);
 		case OPT_OUT_DIR:					return set_out_dir(opt_val);
+		case OPT_PART_STR_LENGTH:			return set_part_str_length(opt_val);
 		case OPT_DISEASE:					return set_disease(opt_val);
 		case OPT_INFECT_RATE:				return set_infect_rate(opt_val);
 		case OPT_INFECT_RATE_SECONDS:		return set_infect_rate_seconds(opt_val);
@@ -67,16 +81,28 @@ int Parameter::set_para(OptionKey opt_key, const std::string& opt_val) {
 		case OPT_SRC_IDN_METHOD:			return set_source_identification_method(opt_val);
 		case OPT_UB_R:						return set_ub_r(opt_val);
 		case OPT_SRC_IDN_KNOWNTIME:			return set_source_identification_knowntime(opt_val);
+		case OPT_START_PART:				return set_start_part(opt_val);
+		case OPT_END_PART:					return set_end_part(opt_val);
+		case OPT_LAST_PARTS_THRESHOLD:		return set_last_parts_threshold(opt_val);
+		case OPT_NET_FRIENDSHIP:			return set_net_friendship(opt_val);
+		case OPT_FD_FUNC:					return set_fd_func(opt_val);
+		case OPT_IF:						return set_if(opt_val);
+		case OPT_IE:						return set_ie(opt_val);
 		default:							return -1;
 	}
 }
 
 int Parameter::set_para(OptionKey opt_key) {
 	switch (opt_key) {
-		default:	return -1;
+		case OPT_HELP:			return set_help();
+		case OPT_CALC_EDGES:	return set_calc_edges();
+		default:				return -1;
 	}
 }
-
+int Parameter::set_help() {
+	_help = true;
+	return 0;
+}
 int Parameter::set_net_type(const std::string& val) {
 	_net_type = UtilConstant::toNetType(val);
 	return 0;
@@ -95,6 +121,11 @@ int Parameter::set_net_volunteers(const std::string& val) {
 }
 int Parameter::set_out_dir(const std::string& val) {
 	_out_dir = val;
+	return 0;
+}
+int Parameter::set_part_str_length(const std::string& val) {
+//	_part_str_length = std::stoi(val);
+	_part_str_length = boost::lexical_cast<int>(val);
 	return 0;
 }
 int Parameter::set_disease(const std::string& val) {
@@ -161,9 +192,66 @@ int Parameter::set_source_identification_knowntime(const std::string& val) {
 	_source_identification_knowntime = UtilConstant::toBool(val);
 	return 0;
 }
+int Parameter::set_start_part(const std::string& val) {
+//	_start_part = Util::getPartString(std::stoi(val), _part_str_length);
+	_start_part = std::stoi(val);
+	return 0;
+}
+int Parameter::set_end_part(const std::string& val) {
+//	_end_part = Util::getPartString(std::stoi(val), _part_str_length);
+	_end_part = std::stoi(val);
+	return 0;
+}
+int Parameter::set_last_parts_threshold(const std::string& val) {
+	_last_parts_threshold = boost::lexical_cast<int>(val);
+	return 0;
+}
+int Parameter::set_calc_edges() {
+	_calc_edges = true;
+	return 0;
+}
+int Parameter::set_net_friendship(const std::string& val) {
+	_net_friendship = val;
+	return 0;
+}
+int Parameter::set_fd_func(const std::string& val) {
+	_fd_func = val;
+	return 0;
+}
+int Parameter::set_evolve_para_alpha(const std::string& val) {
+	_evolve_para_alpha = std::stod(val);
+	return 0;
+}
+
+int Parameter::set_evolve_para_a(const std::string& val) {
+	_evolve_para_a = std::stod(val);
+	return 0;
+}
+
+int Parameter::set_evolve_para_b(const std::string& val) {
+	_evolve_para_b = std::stod(val);
+	return 0;
+}
+
+int Parameter::set_if(const std::string& val) {
+	_if = val;
+	return 0;
+}
+
+int Parameter::set_ie(const std::string& val) {
+	_ie = val;
+	return 0;
+}
+
+
+
 
 int Parameter::set_net_type(const NetType& net_type) {
 	this->_net_type = net_type;
+	return 0;
+}
+int Parameter::set_part_str_length(const int& part_str_length) {
+	this->_part_str_length = part_str_length;
 	return 0;
 }
 int Parameter::set_disease(const DiseaseModel& disease) {
@@ -230,5 +318,31 @@ int Parameter::set_source_identification_knowntime(const bool& knowntime) {
 	this->_source_identification_knowntime = knowntime;
 	return 0;
 }
+int Parameter::set_start_part(const int& start_part) {
+	this->_start_part = start_part;
+	return 0;
+}
+int Parameter::set_end_part(const int& end_part) {
+	this->_end_part = end_part;
+	return 0;
+}
+int Parameter::set_last_parts_threshold(const int& last_parts_threshold) {
+	this->_last_parts_threshold = last_parts_threshold;
+	return 0;
+}
+int Parameter::set_evolve_para_alpha(const double& evolve_para_alpha) {
+	this->_evolve_para_alpha = evolve_para_alpha;
+	return 0;
+}
+int Parameter::set_evolve_para_a(const double& evolve_para_a) {
+	this->_evolve_para_a = evolve_para_a;
+	return 0;
+}
+int Parameter::set_evolve_para_b(const double& evolve_para_b) {
+	this->_evolve_para_b = evolve_para_b;
+	return 0;
+}
+
+
 
 

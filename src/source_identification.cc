@@ -317,7 +317,7 @@ NodeSet SourceIdentification::calc_source_DA(Network& contact_network, const Nod
 		res.insert(infection_graph->get_node_name(0));
 		return res;
 	}
-	AdjacencyMatrix adjacency_matrix = infection_graph->get_adjacency_matrix();
+	AdjacencyMatrix adjacency_matrix = infection_graph->get_weighted_adjacency_matrix();
 	std::vector<double> original_eigenvalues = UtilGsl::calcSymmMatrixEigenvalues(adjacency_matrix);
 	double original_eigenvalue_max = original_eigenvalues[0];
 	std::vector<double> temp_eigenvalues, new_max_eigenvalues(n, 0);

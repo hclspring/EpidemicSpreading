@@ -29,9 +29,10 @@ protected:
 	NodeNameIndexMap _node_name2index;
 	int _days;
 	int _parts;
-	std::shared_ptr<UndirectedGraph> _merged_graph = NULL;
+	std::shared_ptr<UndirectedGraph> _merged_graph = nullptr;
 
 public:
+	Network();
 	Network(const Parameter& para);
 	virtual ~Network();
 
@@ -50,7 +51,7 @@ public:
 	// get information of the structure
 	virtual NeighborList get_neighbor_list(const std::string& nodename, const int& day_index, const int& part_index) const = 0;
 	virtual std::shared_ptr<UndirectedGraph> get_merged_graph() = 0;
-//	virtual std::shared_ptr<UndirectedGraph> get_undirected_graph(const int& day_index, const int& part_index) = 0;
+	virtual std::shared_ptr<UndirectedGraph> get_undirected_graph(const int& day_index, const int& part_index) const = 0;
 	
 protected:
 	void update_node_map();

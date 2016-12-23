@@ -1,6 +1,21 @@
 #include "util.h"
 
-#include "sstream"
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <dirent.h>
+
+void Util::checkTrue(bool condition_to_satisfy, const std::string& error_info) {
+	if (!condition_to_satisfy) {
+		std::cerr << error_info << std::endl;
+		exit(-1);
+	}
+}
+
+void Util::checkFalse(bool condition_not_to_satisfy, const std::string& error_info) {
+	checkTrue(!condition_not_to_satisfy, error_info);
+}
+
 
 std::vector<std::string> Util::addSamePrefix(const std::string& prefix, const std::vector<std::string>& strs) {
 	std::vector<std::string> res(strs.size());
@@ -11,13 +26,38 @@ std::vector<std::string> Util::addSamePrefix(const std::string& prefix, const st
 	return res;
 }
 
+std::vector<int> Util::parseIntegers(const std::string& str, const char& split) {
+	std::vector<int> res;
+	int index_split = 0;
+	int next_split = str.find_first_of(split, index_split);
+	while (next_split != std::string::npos) {
+		res.push_back(std::stoi(str.substr(index_split, next_split - index_split)));
+		index_split = next_split + 1;
+		next_split = str.find_first_of(split, index_split);
+	}
+	res.push_back(std::stoi(str.substr(index_split)));
+	return res;
+}
+
+std::string Util::getPartString(const int& val, const int& min_length){
+	checkTrue(val >= 0, "Error because of trying to get a part string from a negative integer.");
+	std::string res = std::to_string(val);
+	if (res.length() < min_length) {
+		std::string res1;
+		for (int i = 0; i < min_length - res.length(); ++i) {
+			res1.push_back('0');
+		}
+		res1.append(res);
+		return res1;
+	} else {
+		return res;
+	}
+}
+
 std::vector<std::string> Util::readLines(const std::string& infile) {
 	std::vector<std::string> res;
 	std::ifstream ifs(infile.c_str());
-	if (ifs.fail()) {
-		std::cerr << "Error reading file: " << infile << std::endl;
-		exit(-1);
-	}
+	checkFalse(ifs.fail(), "Error reading file: " + infile);
 	std::string line;
 	while (getline(ifs, line, '\n')) {
 		res.push_back(line);
@@ -26,11 +66,84 @@ std::vector<std::string> Util::readLines(const std::string& infile) {
 	return res;
 }
 
-void Util::checkNotNull(void* p, const std::string& p_name) {
-	if (p == NULL) {
-		std::cerr << "Error using null pointer " << p_name << std::endl;
-		exit(-1);
+void Util::writeLines(const std::vector<std::string>& lines, std::ostream& os) {
+	for (int i = 0; i < lines.size(); ++i) {
+		os << lines[i] << std::endl;
 	}
+}
+
+void Util::writeLines(const std::vector<std::string>& lines, const std::string& filename) {
+	std::ofstream ofs(filename.c_str());
+	checkFalse(ofs.fail(), "Error writing file: " + filename);
+	writeLines(lines, ofs);
+	ofs.close();
+}
+
+std::vector<std::string> Util::getAllDirPaths(const std::string& root_dir, const int& layer) {
+	if (layer <= 0) {
+		return std::vector<std::string> { root_dir + "/" };
+	} else {
+		std::vector<std::string> subdirs = getAllSortedSubDirs(root_dir);
+		std::vector<std::string> res, temp_res;
+		for (int i = 0; i < subdirs.size(); ++i) {
+			temp_res = getAllDirPaths(root_dir + "/" + subdirs[i], layer - 1);
+			for (int j = 0; j < temp_res.size(); ++j) {
+				res.push_back(temp_res[j]);
+			}
+		}
+		return res;
+	}
+}
+
+std::vector<std::string> Util::getAllSubDirPaths(const std::string& root_dir, const int& layer) {
+	if (layer <= 0) {
+		return std::vector<std::string> { "" };
+	} else {
+		std::vector<std::string> subdirs = getAllSortedSubDirs(root_dir);
+		std::vector<std::string> res, temp_res;
+		for (int i = 0; i < subdirs.size(); ++i) {
+			temp_res = getAllSubDirPaths(root_dir + "/" + subdirs[i], layer - 1);
+			for (int j = 0; j < temp_res.size(); ++j) {
+				res.push_back(subdirs[i] + "/" + temp_res[j]);
+			}
+		}
+		return res;
+	}
+}
+
+
+bool Util::existDir(const std::string& dir) {
+	return opendir(dir.c_str());
+}
+
+std::vector<std::string> Util::getAllSubs(const std::string& dir) {
+	return getAllSubs(dir, 12);
+}
+
+std::vector<std::string> Util::getAllSortedSubs(const std::string& dir) {
+	std::vector<std::string> res = getAllSubs(dir);
+	std::sort(res.begin(), res.end());
+	return res;
+}
+
+std::vector<std::string> Util::getAllSubDirs(const std::string& dir) {
+	return getAllSubs(dir, 4);
+}
+
+std::vector<std::string> Util::getAllSortedSubDirs(const std::string& dir) {
+	std::vector<std::string> res = getAllSubDirs(dir);
+	std::sort(res.begin(), res.end());
+	return res;
+}
+
+std::vector<std::string> Util::getAllSubFiles(const std::string& dir) {
+	return getAllSubs(dir, 8);
+}
+	
+std::vector<std::string> Util::getAllSortedSubFiles(const std::string& dir) {
+	std::vector<std::string> res = getAllSubFiles(dir);
+	std::sort(res.begin(), res.end());
+	return res;
 }
 
 double Util::gen_rand_double() {
@@ -43,6 +156,14 @@ int Util::gen_rand_int(const int& range) {
 		exit(-1);
 	}
 	return rand() % range;
+}
+
+std::vector<double> Util::gen_rand_vector_double(const int& size, const double& lower_bound, const double& upper_bound) {
+	std::vector<double> res(size);
+	for (int i = 0; i < size; ++i) {
+		res[i] = (upper_bound - lower_bound) * gen_rand_double() + lower_bound;
+	}
+	return res;
 }
 
 std::unordered_set<int> Util::gen_rand_indices(const int& range, const int& count) {
@@ -79,7 +200,7 @@ std::unordered_set<int> Util::gen_rand_indices(const int& range, const int& coun
 	return res;
 }
 
-int Util::factorial(int n) {
+double Util::factorial(int n) {
 	if (n < 0) {
 		std::cerr << "Error calculation the factorial of " << n << "." << std::endl;
 		exit(-1);
@@ -89,6 +210,26 @@ int Util::factorial(int n) {
 		return n * factorial(n - 1);
 	}
 }
+
+double Util::choose(const int& n, const int& k) {
+	checkTrue(k >= 0 && n >= k, "Error: try to calculate illegal choose number.");
+	if (k > n / 2) {
+		return choose(n, n - k);
+	} else if (n == 0) {
+		return 1;
+	} else {
+		std::vector<double> a(k + 1, 1);
+		for (int nn = 2; nn <= n; ++nn) {
+			for (int kk = std::min(nn - 1, k); kk >= 1; --kk) {
+				a[kk] += a[kk-1];
+			}
+			std::cout << a[k] << std::endl;
+		}
+		return a[k];
+	}
+}
+
+
 
 std::string Util::getMemoryPeakUsage() {
 	pid_t pid = getpid();
@@ -141,4 +282,21 @@ double Util::getDeviation(const std::vector<double>& input, const double& mean) 
 			[&sum, mean] (const double& x) { sum += (x - mean) * (x - mean); });
 	return sqrt(sum / n);
 }
+
+std::vector<std::string> Util::getAllSubs(const std::string& root_dir, const int& type) {
+	struct dirent *ent = NULL;
+	DIR *pDir = opendir(root_dir.c_str());
+	checkNotNull(pDir, "Error for the directory " + root_dir + " does not exist.");
+	std::vector<std::string> res;
+	while (ent = readdir(pDir)) {
+		if (ent->d_type & type) {
+			std::string sub(ent->d_name);
+			if (sub.compare(".") != 0 && sub.compare("..") != 0) {
+				res.push_back(sub);
+			}
+		}
+	}
+	return res;
+}
+
 

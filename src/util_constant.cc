@@ -84,29 +84,47 @@ bool UtilConstant::toBool(const std::string& val) {
 }
 
 OptionKey UtilConstant::int2OptionKey(const int& val) {
-	switch (val) {
-		case 1:	return OPT_NET_TYPE;
-		case 2:	return OPT_NET_INROOT;
-		case 3: return OPT_NET_INJSON;
-		case 4: return OPT_NET_VOLUNTEERS;
-		case 5: return OPT_OUT_DIR;
-		case 6: return OPT_DISEASE;
-		case 7: return OPT_INFECT_RATE;
-		case 8: return OPT_INFECT_RATE_SECONDS;
-		case 9: return OPT_INFECTIOUS_RATE;
-		case 10: return OPT_INFECTIOUS_RATE_SECONDS;
-		case 11: return OPT_RECOVER_RATE;
-		case 12: return OPT_RECOVER_RATE_SECONDS;
-		case 13: return OPT_SECONDS_PER_WEIGHT;
-		case 14: return OPT_SECONDS_PER_STEP;
-		case 15: return OPT_SOURCE_COUNT;
-		case 16: return OPT_SNAPSHOT_COVERAGE;
-		case 17: return OPT_MAX_SIM_DAYS;
-		case 18: return OPT_REPEAT_TIMES;
-		case 19: return OPT_SRC_IDN_METHOD;
-		case 20: return OPT_UB_R;
-		case 21: return OPT_SRC_IDN_KNOWNTIME;
-		default: std::cerr << "Error: unknown OptionKey." << std::endl; exit(-1);
+	std::vector<OptionKey> vec = {
+		OPT_HELP, // 'h'
+		OPT_NET_TYPE,
+		OPT_NET_INROOT,
+		OPT_NET_INJSON,
+		OPT_NET_VOLUNTEERS,
+		OPT_OUT_DIR,
+		OPT_PART_STR_LENGTH,
+		OPT_DISEASE,
+		OPT_INFECT_RATE,
+		OPT_INFECT_RATE_SECONDS,
+		OPT_INFECTIOUS_RATE,
+		OPT_INFECTIOUS_RATE_SECONDS,
+		OPT_RECOVER_RATE,
+		OPT_RECOVER_RATE_SECONDS,
+		OPT_SECONDS_PER_WEIGHT,
+		OPT_SECONDS_PER_STEP,
+		OPT_SOURCE_COUNT,
+		OPT_SNAPSHOT_COVERAGE,
+		OPT_MAX_SIM_DAYS,
+		OPT_REPEAT_TIMES,
+		OPT_SRC_IDN_METHOD,
+		OPT_UB_R,
+		OPT_SRC_IDN_KNOWNTIME,
+		OPT_START_PART,
+		OPT_END_PART,
+		OPT_LAST_PARTS_THRESHOLD,
+		OPT_CALC_EDGES,
+		OPT_NET_FRIENDSHIP,
+		OPT_FD_FUNC,
+		OPT_EVOLVE_PARA_ALPHA,
+		OPT_EVOLVE_PARA_A,
+		OPT_EVOLVE_PARA_B,
+		OPT_IF,
+		OPT_IE
+	};
+	if (val >= 'h' && val < 'h' + vec.size()) {
+		return vec[val - 'h'];
+	} else {
+		std::cerr << "Error: unknown OptionKey." << std::endl;
+		exit(-1);
 	}
 }
 

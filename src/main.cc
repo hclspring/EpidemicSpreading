@@ -24,7 +24,11 @@ int main(int argc, char** argv) {
 	}
 
 	Parameter para(argc - 1, argv + 1, runner->get_short_options().c_str(), runner->get_long_options());
-	runner->run(para);
+	if (para.get_help()) {
+		runner->help();
+	} else {
+		runner->run(para);
+	}
 
 	return 0;
 }

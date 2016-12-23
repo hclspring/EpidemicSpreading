@@ -5,6 +5,9 @@
 #include "neighbor_info.h"
 #include "undirected_graph.h"
 
+Network::Network() {
+}
+
 Network::Network(const Parameter& para) {
 	if (para.get_net_volunteers().size() > 0) {
 		read_volunteers(para.get_net_volunteers());
@@ -12,6 +15,11 @@ Network::Network(const Parameter& para) {
 }
 
 Network::~Network() {
+	_nodes.clear();
+	_node_name2index.clear();
+	_days = 0;
+	_parts = 0;
+	_merged_graph = nullptr;
 }
 
 int Network::get_days() const {

@@ -20,8 +20,9 @@
 StepTest StepTest::_step_test;
 
 StepTest::StepTest(): Runner() {
-	_short_options = "";
+	_short_options = "h";
 	_long_options = new struct option[100]{
+		{"help",		no_argument,		NULL, OPT_HELP},
 		{"net_type",	required_argument,	NULL, OPT_NET_TYPE},
 		{"net_inroot",	required_argument,	NULL, OPT_NET_INROOT},
 		{"net_injson",	required_argument,	NULL, OPT_NET_INJSON},
@@ -42,6 +43,10 @@ StepTest::StepTest(): Runner() {
 		{NULL,			0,					NULL,  0 } //must end with {0, 0, 0, 0}
 	};
 	RunnerManager::instance()->install("step_test", this);
+}
+
+void StepTest::help() {
+	std::cout << "Help in StepTest." << std::endl;
 }
 
 int StepTest::run(const Parameter& para) {

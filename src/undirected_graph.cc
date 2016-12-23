@@ -18,6 +18,8 @@ UndirectedGraph::UndirectedGraph(const UndirectedGraph& original) {
 	_edge_weight_attr = original._edge_weight_attr;
 }
 
+//UndirectedGraph::UndirectedGraph(const std::string& filename_gml);
+
 UndirectedGraph::UndirectedGraph(
 		const std::string& filename_gml, 
 		const NodeSet& volunteers
@@ -96,6 +98,14 @@ bool UndirectedGraph::contains_node(const std::string& nodename) const {
 	return (it != _node_name2index.end());
 }
 
+bool UndirectedGraph::contains_all_nodes(const NodeVec& node_vec) const {
+	bool res = true;
+	for (int i = 0; i < node_vec.size(); ++i) {
+		res = res && contains_node(node_vec[i]);
+	}
+	return res;
+}
+
 int UndirectedGraph::get_node_index(const std::string& nodename) const {
 	NodeNameIndexMap::const_iterator it = _node_name2index.find(nodename);
 	if (it == _node_name2index.end()) {
@@ -134,6 +144,23 @@ NeighborList UndirectedGraph::get_neighbor_list(const std::string& nodename) {
 
 int UndirectedGraph::get_degree(const std::string& nodename) {
 	return get_neighbor_list(nodename).size();
+}
+
+std::unordered_map<std::string, int> UndirectedGraph::get_degree_map() {
+	std::unordered_map<std::string, int> res;
+	for (int i = 0; i < get_node_size(); ++i) {
+		std::string nodename = get_node_name(i);
+		res.insert(std::make_pair(nodename, get_degree(nodename)));
+	}
+	return res;
+}
+
+std::vector<int> UndirectedGraph::get_degree_vector() {
+	std::vector<int> res(get_node_size());
+	for (int i = 0; i < get_node_size(); ++i) {
+		res[i] = get_degree(get_node_name(i));
+	}
+	return res;
 }
 
 bool UndirectedGraph::is_connected(const std::string& nodename1, const std::string& nodename2) const {
@@ -307,7 +334,7 @@ bool UndirectedGraph::is_tree() const {
 	}
 }
 
-AdjacencyMatrix UndirectedGraph::get_adjacency_matrix() {
+AdjacencyMatrix UndirectedGraph::get_adjacency_matrix(const bool& weighted) {
 	int n = get_node_size();
 	AdjacencyMatrix res(n, AdjacencyRow(n, 0));
 	for (int i = 0; i < n; ++i) {
@@ -318,7 +345,11 @@ AdjacencyMatrix UndirectedGraph::get_adjacency_matrix() {
 				std::string nodei = get_node_name(i);
 				std::string nodej = get_node_name(j);
 				if (is_connected(nodei, nodej)) {
-					res[i][j] = get_edge_weight(nodei, nodej);
+					if (weighted) {
+						res[i][j] = get_edge_weight(nodei, nodej);
+					} else {
+						res[i][j] = 1;
+					}
 				} else {
 					res[i][j] = 0;
 				}
@@ -328,8 +359,52 @@ AdjacencyMatrix UndirectedGraph::get_adjacency_matrix() {
 	return res;
 }
 
+AdjacencyMatrix UndirectedGraph::get_adjacency_matrix(const bool& weighted, const NodeVec& node_vec) {
+	int n = node_vec.size();
+	AdjacencyMatrix res(n, AdjacencyRow(n, 0));
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < n; ++j) {
+			if (i == j) {
+				res[i][j] = 0;
+			} else if (!contains_node(node_vec[i]) || !contains_node(node_vec[j])) {
+				res[i][j] = 0;
+			} else {
+				std::string nodei = node_vec[i];
+				std::string nodej = node_vec[j];
+				if (nodei.compare(nodej) != 0 && is_connected(nodei, nodej)) {
+					if (weighted) {
+						res[i][j] = get_edge_weight(nodei, nodej);
+					} else {
+						res[i][j] = 1;
+					}
+				} else {
+					res[i][j] = 0;
+				}
+			}
+		}
+	}
+	return res;
+}
+
+AdjacencyMatrix UndirectedGraph::get_unweighted_adjacency_matrix() {
+	return get_adjacency_matrix(false);
+}
+
+AdjacencyMatrix UndirectedGraph::get_unweighted_adjacency_matrix(const NodeVec& node_vec) {
+	return get_adjacency_matrix(false, node_vec);
+}
+
+
+AdjacencyMatrix UndirectedGraph::get_weighted_adjacency_matrix() {
+	return get_adjacency_matrix(true);
+}
+
+AdjacencyMatrix UndirectedGraph::get_weighted_adjacency_matrix(const NodeVec& node_vec) {
+	return get_adjacency_matrix(true, node_vec);
+}
+
 LaplacianMatrix UndirectedGraph::get_laplacian_matrix() {
-	LaplacianMatrix res = get_adjacency_matrix();
+	LaplacianMatrix res = get_adjacency_matrix(true);
 	for (int i = 0; i < res.size(); ++i) {
 		for (int j = 0; j < res[i].size(); ++j) {
 			if (i == j) {
@@ -340,6 +415,115 @@ LaplacianMatrix UndirectedGraph::get_laplacian_matrix() {
 		}
 	}
 	return res;
+}
+
+int UndirectedGraph::calc_components(IndexVec& components) const {
+	components.resize(get_node_size());
+	igraph_vector_t membership;
+	igraph_vector_init(&membership, get_node_size());
+	int number_of_components;
+	int igraph_res = igraph_clusters(&_graph, &membership, NULL, 
+			&number_of_components, IGRAPH_STRONG);
+	Util::checkFalse(igraph_res == IGRAPH_EINVAL, "IGRAPH: Invalid mode argument.");
+	for (int i = 0; i < components.size(); ++i) {
+		components[i] = VECTOR(membership)[i];
+	}
+	igraph_vector_destroy(&membership);
+	return number_of_components;
+}
+
+std::vector<UGraphPtr> UndirectedGraph::get_components() {
+	IndexVec component_ids;
+	int number_of_components = calc_components(component_ids);
+	typedef std::unordered_map<int, std::shared_ptr<IndexVec>> IndexVecPtrMap;
+	IndexVecPtrMap index_ids_map = Util::get_vecptrmap(component_ids);
+	IndexVecPtrMap::iterator it;
+	std::vector<UGraphPtr> res;
+	for (it = index_ids_map.begin(); it != index_ids_map.end(); ++it) {
+		std::shared_ptr<IndexVec> indexVecPtr = it->second;
+		NodeSet nodenames;
+		for (size_t i = 0; i < indexVecPtr->size(); ++i) {
+			nodenames.insert(get_node_name(indexVecPtr->at(i)));
+		}
+		res.push_back(get_sub_graph(nodenames));
+	}
+	return res;
+}
+
+UGraphPtr UndirectedGraph::get_largest_component() {
+	IndexVec component_ids;
+	int number_of_components = calc_components(component_ids);
+	typedef std::unordered_map<int, std::shared_ptr<IndexVec>> IndexVecPtrMap;
+	IndexVecPtrMap index_ids_map = Util::get_vecptrmap(component_ids);
+	IndexVecPtrMap::iterator it, max_it;
+	max_it = index_ids_map.begin();
+	it = max_it;
+	int max_v = max_it->second->size();
+	for (++it; it != index_ids_map.end(); ++it) {
+		if (it->second->size() > max_v) {
+			max_v = it->second->size();
+			max_it = it;
+		}
+	}
+	std::shared_ptr<IndexVec> indexVecPtr = max_it->second;
+	NodeSet nodenames;
+	for (size_t i = 0; i < indexVecPtr->size(); ++i) {
+		nodenames.insert(get_node_name(indexVecPtr->at(i)));
+	}
+	return get_sub_graph(nodenames);
+}
+
+bool UndirectedGraph::is_pair_component(const std::string& p1, const std::string& p2) {
+	return (contains_node(p1) && contains_node(p2) &&
+			is_connected(p1, p2) && 
+			get_degree(p1) == 1 && get_degree(p2) == 1);
+}
+
+bool UndirectedGraph::is_triplet_component(const std::string& p1, const std::string& pmid, const std::string& p2) {
+	return (contains_node(p1) && contains_node(p2) && contains_node(pmid) &&
+			is_connected(p1, pmid) && is_connected(p2, pmid) &&
+			get_degree(p1) == 1 && get_degree(p2) == 1 && get_degree(pmid) == 2);
+}
+
+bool UndirectedGraph::is_line_without_others(const NodeVec& node_vec) {
+	if (!contains_all_nodes(node_vec)) {
+		return false;
+	}
+	if (node_vec.size() == 0) {
+		return false;
+	} else if (node_vec.size() == 1) { 
+		return get_degree(node_vec[0]) == 0;
+	} else {
+		int n = node_vec.size();
+		bool res = (get_degree(node_vec[0]) == 1) && (get_degree(node_vec[n-1]) == 1);
+		for (int i = 1; i < n - 1; ++i) {
+			res = res && (get_degree(node_vec[i]) == 2) && is_connected(node_vec[i-1], node_vec[i]);
+		}
+		res = res && is_connected(node_vec[n-2], node_vec[n-1]);
+		return res;
+	}
+}
+
+bool UndirectedGraph::is_clique(const NodeVec& node_vec) {
+	if (!contains_all_nodes(node_vec)) {
+		return false;
+	} else if (node_vec.size() == 0) {
+		return false;
+	} else {
+		for (int i = 0; i < node_vec.size(); ++i) {
+			for (int j = i + 1; j < node_vec.size(); ++j) {
+				if (!is_connected(node_vec[i], node_vec[j])) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+}
+
+bool UndirectedGraph::is_clique_without_others(const NodeVec& node_vec) {
+	return is_clique(node_vec) &&
+		get_same_component(node_vec[0]).size() == node_vec.size();
 }
 
 int UndirectedGraph::get_shortest_distance(const std::string& nodename1, const std::string& nodename2) {
@@ -404,6 +588,82 @@ double UndirectedGraph::get_betweenness(const std::string& nodename) {
 	return res;
 }
 
+double UndirectedGraph::get_average_distance() {
+	igraph_real_t res;
+	igraph_average_path_length(&_graph, &res, IGRAPH_UNDIRECTED, true);
+	return res;
+}
+
+double UndirectedGraph::get_clustering_coefficient() {
+	igraph_real_t res;
+	igraph_transitivity_undirected(&_graph, &res, IGRAPH_TRANSITIVITY_ZERO);
+	return res;
+}
+
+double UndirectedGraph::get_edge_density() {
+	int n = get_node_size();
+	return get_edge_size() * 2.0 / (n * (n - 1)) ;
+}
+
+std::vector<int> UndirectedGraph::get_all_degree_int() {
+	std::vector<int> res;
+	for (int i = 0; i < get_node_size(); ++i) {
+		res.push_back(get_degree(get_node_name(i)));
+	}
+	return res;
+}
+
+std::vector<double> UndirectedGraph::get_all_degree_double() {
+	std::vector<double> res;
+	for (int i = 0; i < get_node_size(); ++i) {
+		res.push_back(get_degree(get_node_name(i)));
+	}
+	return res;
+}
+
+std::vector<double> UndirectedGraph::get_all_closeness() {
+	int n = get_node_size();
+	igraph_vector_t closenesses, indices;
+	igraph_vs_t vids;
+	igraph_vector_init(&closenesses, n);
+	igraph_vector_init(&indices, n);
+	for (int i = 0; i < n; ++i) {
+		VECTOR(indices)[i] = i;
+	}
+	igraph_vs_vector(&vids, &indices);
+	igraph_closeness(&_graph, &closenesses, vids, IGRAPH_ALL, NULL, false);
+	std::vector<double> res(n, 0);
+	for (int i = 0; i < n; ++i) {
+		res[i] = VECTOR(closenesses)[i];
+	}
+	igraph_vs_destroy(&vids);
+	igraph_vector_destroy(&closenesses);
+	igraph_vector_destroy(&indices);
+	return res;
+}
+
+std::vector<double> UndirectedGraph::get_all_clustering_coefficient() {
+	int n = get_node_size();
+	igraph_vector_t ccs, indices;
+	igraph_vs_t vids;
+	igraph_vector_init(&ccs, n);
+	igraph_vector_init(&indices, n);
+	for (int i = 0; i < n; ++i) {
+		VECTOR(indices)[i] = i;
+	}
+	igraph_vs_vector(&vids, &indices);
+	igraph_transitivity_local_undirected(&_graph, &ccs, vids, IGRAPH_TRANSITIVITY_ZERO);
+	std::vector<double> res(n, 0);
+	for (int i = 0; i < n; ++i) {
+		res[i] = VECTOR(ccs)[i];
+	}
+	igraph_vs_destroy(&vids);
+	igraph_vector_destroy(&ccs);
+	igraph_vector_destroy(&indices);
+	return res;
+}
+
+
 std::vector<double> UndirectedGraph::get_betweenness_all() {
 	std::vector<double> res;
 	igraph_vector_t bet;
@@ -443,31 +703,39 @@ std::vector<double> UndirectedGraph::get_betweenness(const NodeVec& nodenames) {
 	return res;
 }
 
-std::shared_ptr<UndirectedGraph> UndirectedGraph::merge(const std::vector<std::shared_ptr<UndirectedGraph>>& ugraphs) {
+std::shared_ptr<UndirectedGraph> UndirectedGraph::merge(const std::vector<std::shared_ptr<UndirectedGraph>>& ugraphs, const bool& with_weight) {
 	std::shared_ptr<UndirectedGraph> res = std::make_shared<UndirectedGraph>();
 	NodeSet node_set;
 	for (int i = 0; i < ugraphs.size(); ++i) {
 		node_set = Util::getUnion(node_set, ugraphs[i]->get_node_names());
 	}
 	res->add_nodes(node_set);
+
+//	res->update_members_with_nodes_changed();
 	int n = res->get_node_size();
 	std::vector<NeighborList> neighbors(n, NeighborList());
 	for (int t = 0; t < ugraphs.size(); ++t) {
+		// In graph t
 		for (int i = 0; i < n; ++i) {
+			// For node i in result graph
 			std::string nodename = res->get_node_name(i);
-			NeighborList nl = ugraphs[t]->get_neighbor_list(nodename);
-			for (NeighborList::iterator jt = nl.begin(); jt != nl.end(); ++jt) {
-				std::string neighbor_name = jt->get_name();
-				double weight = jt->get_weight();
-				NeighborList::iterator it;
-				for (it = neighbors[i].begin(); it != neighbors[i].end(); ++it) {
-					if (it->get_name().compare(neighbor_name) == 0) {
-						it->set_weight(it->get_weight() + weight);
-						break;
+			if (ugraphs[t]->contains_node(nodename)) {
+				NeighborList nl = ugraphs[t]->get_neighbor_list(nodename); // get NeighborList of nodename in graph t
+				for (NeighborList::iterator jt = nl.begin(); jt != nl.end(); ++jt) {
+					std::string neighbor_name = jt->get_name();
+					double weight = (with_weight ? jt->get_weight() : 1.0);
+					NeighborList::iterator it;
+					for (it = neighbors[i].begin(); it != neighbors[i].end(); ++it) {
+						if (it->get_name().compare(neighbor_name) == 0) {
+							if (with_weight) {
+								it->set_weight(it->get_weight() + weight);
+							}
+							break;
+						}
 					}
-				}
-				if (it == neighbors[i].end()) {
-					neighbors[i].push_back(NeighborInfo(neighbor_name, weight));
+					if (it == neighbors[i].end()) {
+						neighbors[i].push_back(NeighborInfo(neighbor_name, weight));
+					}
 				}
 			}
 		}
@@ -490,14 +758,34 @@ std::shared_ptr<UndirectedGraph> UndirectedGraph::merge(const std::vector<std::s
 	return res;
 }
 
+std::shared_ptr<UndirectedGraph> UndirectedGraph::merge(const std::shared_ptr<UndirectedGraph>& ugraph1, const std::shared_ptr<UndirectedGraph>& ugraph2, const bool& with_weight) {
+	std::vector<UGraphPtr> x {ugraph1, ugraph2};
+	return merge(x, with_weight);
+}
+
 std::shared_ptr<UndirectedGraph> UndirectedGraph::get_sub_graph(const NodeSet& nodenames) {
-	std::shared_ptr<UndirectedGraph> res = std::make_shared<UndirectedGraph>(*this);
 	if (Util::getDiff(nodenames, get_node_names()).size() > 0) {
 		std::cerr << "Error for extra nodes in the subgraph but not in the original graph." << std::endl;
 		exit(-1);
 	}
-	NodeSet nodes_to_del = Util::getDiff(get_node_names(), nodenames);
-	res->delete_nodes(nodes_to_del);
+	std::shared_ptr<UndirectedGraph> res = std::make_shared<UndirectedGraph>();
+	res->add_nodes(nodenames);
+	int n = nodenames.size();
+	std::list<EdgeInfo> edges;
+	for (int i = 0; i < n; ++i) {
+		std::string nodename1 = res->get_node_name(i);
+		NeighborList nl = get_neighbor_list(nodename1);
+		for (NeighborList::iterator it = nl.begin(); it != nl.end(); ++it) {
+			std::string nodename2 = it->get_name();
+			double weight = it->get_weight();
+			int index2 = res->get_node_index(nodename2);
+			if (index2 > i) {
+				edges.push_back(std::make_tuple(nodename1, nodename2, weight));
+			}
+		}
+	}
+	res->update_has_weight();
+	res->add_edges(edges);
 	return res;
 }
 
@@ -591,7 +879,7 @@ void UndirectedGraph::add_edges(const EdgeList& edges) {
 			SETEAN(&_graph, _edge_weight_attr.c_str(), eid, std::get<2>(temp_tuple[i]));
 		}
 	}
-	init_neighbors_vec();
+	//init_neighbors_vec();
 }
 
 void UndirectedGraph::update_members_with_nodes_changed() {

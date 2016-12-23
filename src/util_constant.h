@@ -26,6 +26,17 @@ public:
 	static std::vector<DiseaseStage> getUnstableStages(const DiseaseModel& disease);
 	static bool isStable(const DiseaseModel& disease, const std::vector<DiseaseStage>& stages, const std::vector<DiseaseStage>& unstable_stages);
 	static DiseaseStage getInitialInfectedStage(const DiseaseModel& disease);
+
+	/*
+	 * The following functions haven't been implemented.
+	// For part in PearlNetwork
+	static int getPartIndex(const int& part_int);
+	static int getPartIndex(const std::string& part_str);
+	static std::string getPartStr(const int& part_index);
+	// For day in PearlNetwork
+	static int getDayIndex(const std::string& day_str);
+	static std::string getDaystr(const int& day_index);
+	*/
 };
 
 #endif // NETWORKPROJECT_UTILCONSTANT_H_

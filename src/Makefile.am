@@ -2,6 +2,7 @@ bin_PROGRAMS = netjob
 INCLUDES = -I/usr/local/include/igraph
 
 netjob_LDADD= -ligraph -lgsl -lgslcblas
+#-lboost_system -lboost_thread
 netjob_LDFLAGS= -static
 netjob_SOURCES=	main.cc\
 				constant.h\
@@ -45,4 +46,18 @@ netjob_SOURCES=	main.cc\
 				step_source_identification.h\
 				step_source_identification.cc\
 				step_source_identification_v2.h\
-				step_source_identification_v2.cc
+				step_source_identification_v2.cc\
+				step_get_small_component.h\
+				step_get_small_component.cc\
+				step_calc_static_feature.h\
+				step_calc_static_feature.cc\
+				step_evolve_large_component.h\
+				step_evolve_large_component.cc\
+				step_reindex_gml.h\
+				step_reindex_gml.cc\
+				step_select_nelder_mead_solutions.h\
+				step_select_nelder_mead_solutions.cc\
+				step_simulate_evolve.h\
+				step_simulate_evolve.cc\
+				step_determine_relationship.h\
+				step_determine_relationship.cc

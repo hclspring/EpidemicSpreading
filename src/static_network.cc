@@ -36,3 +36,12 @@ std::shared_ptr<UndirectedGraph> StaticNetwork::get_merged_graph() {
 	}
 	return _merged_graph;
 }
+	
+std::shared_ptr<UndirectedGraph> StaticNetwork::get_undirected_graph(const int& day_index, const int& part_index) const {
+	if (check_day_index(day_index) && check_part_index(part_index)) {
+		return _ugraph;
+	} else {
+		return nullptr;
+	}
+}
+

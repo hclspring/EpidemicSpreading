@@ -19,6 +19,7 @@ private:
 	StepTest();
 
 public:
+	virtual void help();
 	virtual int run(const Parameter& para);
 };
 

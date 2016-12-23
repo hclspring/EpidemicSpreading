@@ -21,12 +21,14 @@ const size_t OPTION_KEY_MAXSIZE = 100;
  * NOTE: when adding OptionKey values, you must add lines in the function UtilConstant::int2OptionKey(const int&) in file "util_constant.cc".
  */
 enum OptionKey {
+	OPT_HELP = 'h',
 //	OPT_NET_DIM = 0, // dimension of the input network(s), possible values are: 0 (single), 1 (dynamic), 2 (like pearl)
-	OPT_NET_TYPE = 1, // type of the input network, possible values: STATIC, DYNAMIC, PEARL
+	OPT_NET_TYPE, // type of the input network, possible values: STATIC, DYNAMIC, PEARL
 	OPT_NET_INROOT, // input of the network: filename for common-type, and root-directory for pearl-type
 	OPT_NET_INJSON, // json file of the input network(s), which records directories and files of the networks in detail
 	OPT_NET_VOLUNTEERS, // a file contains all nodes of the network(s). when this option exists, the network(s) contain(s) exactly these volunteers as nodes.
 	OPT_OUT_DIR, // output of the results: dir or filename
+	OPT_PART_STR_LENGTH, //  length of the part string (usually be 3 for ordinary pearl networks)
 	OPT_DISEASE, // disease model of the simulation, possible values: SI, SIR, SIS
 	OPT_INFECT_RATE, // beta parameter of the transmission (S->I), double
 	OPT_INFECT_RATE_SECONDS, // time duration for beta, double
@@ -43,6 +45,17 @@ enum OptionKey {
 	OPT_SRC_IDN_METHOD,
 	OPT_UB_R, // parameter r of unbiased betweenness
 	OPT_SRC_IDN_KNOWNTIME,
+	OPT_START_PART,
+	OPT_END_PART,
+	OPT_LAST_PARTS_THRESHOLD,
+	OPT_CALC_EDGES,
+	OPT_NET_FRIENDSHIP,
+	OPT_FD_FUNC,
+	OPT_EVOLVE_PARA_ALPHA,
+	OPT_EVOLVE_PARA_A,
+	OPT_EVOLVE_PARA_B,
+	OPT_IF,
+	OPT_IE,
 };
 
 

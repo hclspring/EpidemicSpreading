@@ -27,6 +27,7 @@ public:
 
 	virtual NeighborList get_neighbor_list(const std::string& nodename, const int& day_index, const int& part_index) const override;
 	virtual std::shared_ptr<UndirectedGraph> get_merged_graph() override;
+	virtual std::shared_ptr<UndirectedGraph> get_undirected_graph(const int& day_index, const int& part_index) const override;
 };
 
 

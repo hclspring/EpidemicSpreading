@@ -30,6 +30,7 @@ private:
 	StepSourceIdentification();
 
 public:
+	virtual void help();
 	virtual int run(const Parameter& para);
 
 private:

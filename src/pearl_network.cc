@@ -8,17 +8,13 @@
 #include "util_boost.h"
 
 PearlNetwork::PearlNetwork(const Parameter& para) : Network(para) {
-	PTree pt = UtilBoost::jsonFile2Ptree(para.get_net_injson());
-	PTree data = pt.get_child("data");
-	for (PTree::iterator it = data.begin(); it != data.end(); ++it) {
-		std::string subdir = it->second.get<std::string>("dir");
-//		std::cout << "subdir = " << subdir << std::endl;
-		PTree subdata = it->second.get_child("data");
-		std::vector<std::shared_ptr<UndirectedGraph>> gs;
-		for (PTree::iterator jt = subdata.begin(); jt != subdata.end(); ++jt) {
-			std::string filename = para.get_net_inroot();
-			filename.append("/").append(subdir).append("/").append(jt->second.get<std::string>("file"));
-			gs.push_back(std::make_shared<UndirectedGraph>(filename, Util::vec2unset(_nodes)));
+	std::vector<std::vector<std::string>> filenames = UtilBoost::parsePtree2layerAI(
+			UtilBoost::jsonFile2Ptree(para.get_net_injson()), para.get_part_str_length());
+	for (int i = 0; i < filenames.size(); ++i) {
+		std::vector<UGraphPtr> gs;
+		for (int j = 0; j < filenames[i].size(); ++j) {
+			gs.push_back(std::make_shared<UndirectedGraph>(
+						para.get_net_inroot() + "/" + filenames[i][j], Util::vec2unset(_nodes)));
 		}
 		_ugraphss.push_back(gs);
 	}
@@ -72,7 +68,18 @@ std::shared_ptr<UndirectedGraph> PearlNetwork::get_merged_graph() {
 				temp[i * _parts + j] = _ugraphss[i][j];
 			}
 		}
-		_merged_graph = UndirectedGraph::merge(temp);
+		_merged_graph = UndirectedGraph::merge(temp, true); // with_weight = true
 	}
 	return _merged_graph;
 }
+	
+std::shared_ptr<UndirectedGraph> PearlNetwork::get_undirected_graph(const int& day_index, const int& part_index) const {
+	if (check_day_index(day_index) && check_part_index(part_index)) {
+		return _ugraphss[day_index][part_index];
+	} else {
+		return nullptr;
+	}
+}
+
+
+

@@ -8,17 +8,62 @@
 #include <vector>
 #include <set>
 #include <unordered_set>
+#include <unordered_map>
 #include <algorithm>
 #include <climits>
+#include <memory>
+#include <cmath>
+
 #include "unistd.h"
 
 class Util {
-public:
+public:	
+	// Check condition and give output if the condition is not satisfied
+	static void checkTrue(bool condition_to_satisfy, const std::string& error_info);
+	static void checkFalse(bool condition_not_to_satisfy, const std::string& error_info);
+
+	template<typename T>
+	static void checkPointer(T* p, const std::string& p_name) {
+		checkTrue(p, "Error using null pointer " + p_name);
+	}
+
+	template<typename T>
+	static void checkNotNull(T* p, const std::string& p_name) {
+		checkPointer(p, p_name);
+	}
+
+	// Deal with strings
 	static std::vector<std::string> addSamePrefix(const std::string&, const std::vector<std::string>&);
+	static std::vector<int> parseIntegers(const std::string&, const char& split);
+	static std::string getPartString(const int& val, const int& min_length);
+
+	// Deal with files
 	static std::vector<std::string> readLines(const std::string&);
+	static void writeLines(const std::vector<std::string>& lines, std::ostream& os);
+	static void writeLines(const std::vector<std::string>& lines, const std::string& filename);
 
-	static void checkNotNull(void* p, const std::string& p_name);
+	template <typename T>
+	static void writeVector(const std::vector<T>& vec, const std::string& filename) {
+		std::ofstream ofs(filename.c_str());
+		checkFalse(ofs.fail(), "Error writing file: " + filename);
+		for (int i = 0; i < vec.size(); ++i) {
+			ofs << vec[i] << std::endl;
+		}
+		ofs.close();
+	}
 
+	// Deal with file system
+	static std::vector<std::string> getAllDirPaths(const std::string& root_dir, const int& layer);
+	static std::vector<std::string> getAllSubDirPaths(const std::string& root_dir, const int& layer);
+	static bool existDir(const std::string& dir);
+	static std::vector<std::string> getAllSubs(const std::string& dir);
+	static std::vector<std::string> getAllSortedSubs(const std::string& dir);
+	static std::vector<std::string> getAllSubDirs(const std::string& dir);
+	static std::vector<std::string> getAllSortedSubDirs(const std::string& dir);
+	static std::vector<std::string> getAllSubFiles(const std::string& dir);
+	static std::vector<std::string> getAllSortedSubFiles(const std::string& dir);
+
+	// Deal with vectors and unordered_sets
 	template<typename Type> static std::unordered_set<Type> vec2unset(
 			const std::vector<Type>& input)
 	{
@@ -43,6 +88,41 @@ public:
 		return res;
 	}
 
+	template<typename Type> 
+	static std::vector<Type> getVector(const std::unordered_set<Type>& input) {
+		std::vector<Type> res;
+		std::for_each(input.begin(), input.end(),
+				[&res] (const Type& x) { res.push_back(x); } );
+	}
+
+	// Judge whether a vector contains a specified value.
+	template<typename Type>
+	static bool contains(const std::vector<Type>& vec, const Type& x) {
+		for (int i = 0; i < vec.size(); ++i) {
+			if (vec[i] == x) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Given a vector with different values, return a map with indices of the same value are merged together into a vector.
+	template <typename T>
+	static std::unordered_map<T, std::shared_ptr<std::vector<int>>>
+	get_vecptrmap(const std::vector<T>& vec) {
+		std::unordered_map<T, std::shared_ptr<std::vector<int>>> res;
+		for (int i = 0; i < vec.size(); ++i) {
+			if (res.find(vec[i]) == res.end()) {
+				std::vector<int> a(1, i);
+				res.insert(std::make_pair(vec[i], std::make_shared<std::vector<int>>(a)));
+			} else {
+				res[vec[i]]->push_back(i);
+			}
+		}
+		return res;
+	}
+
+	// Deal with set calculation
 	template<typename Type> static std::unordered_set<Type> getIntersection(
 			const std::unordered_set<Type>& setA,
 			const std::unordered_set<Type>& setB)
@@ -103,23 +183,7 @@ public:
 		return diffSet;
 	}
 
-	template<typename Type> 
-	static std::vector<Type> getVector(const std::unordered_set<Type>& input) {
-		std::vector<Type> res;
-		std::for_each(input.begin(), input.end(),
-				[&res] (const Type& x) { res.push_back(x); } );
-	}
-
-	template<typename Type>
-	static bool contains(const std::vector<Type>& vec, const Type& x) {
-		for (int i = 0; i < vec.size(); ++i) {
-			if (vec[i] == x) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
+	// Deal with min/max of a vector
 	template<typename Type>
 	static Type getMin(const std::vector<Type>& input) {
 		if (input.size() <= 0) {
@@ -145,12 +209,6 @@ public:
 		}
 		return res;
 	}
-
-
-	static double gen_rand_double();
-	static int gen_rand_int(const int& range);
-	static std::unordered_set<int> gen_rand_indices(const int& range, const int& count);
-	static int factorial(int n);
 
 	template<typename Type>
 	static int getMinIndex(const std::vector<Type>& input) {
@@ -186,6 +244,17 @@ public:
 		return max_index;
 	}
 
+	// Deal with random functions
+	static double gen_rand_double();
+	static int gen_rand_int(const int& range);
+	static std::vector<double> gen_rand_vector_double(const int& size, const double& lower_bound, const double& upper_bound);
+	static std::unordered_set<int> gen_rand_indices(const int& range, const int& count);
+
+	// Deal with maths
+	static double factorial(int n);
+	static double choose(const int& n, const int& k);
+
+	// Deal with a matrix.
 	template<typename Type>
 	static bool isMatrix(const std::vector<std::vector<Type>>& input) {
 		int n = input.size();
@@ -273,6 +342,118 @@ public:
 	}
 
 	template<typename Type>
+	static std::vector<std::vector<Type>> getSubMatrix(
+			const std::vector<std::vector<Type>>& input, 
+			const std::unordered_set<int>& indices) {
+		if (!isMatrix(input)) {
+			std::cerr << "Error for finding input not an matrix." << std::endl;
+			exit(-1);
+		}
+		std::vector<std::vector<Type>> res;
+		for (int i = 0; i < input.size(); ++i) {
+			if (indices.find(i) != indices.end()) {
+				std::vector<Type> temp;
+				for (int j = 0; j < input[i].size(); ++j) {
+					if (indices.find(j) != indices.end()) {
+						temp.push_back(input[i][j]);
+					}
+				}
+				res.push_back(temp);
+			}
+		}
+		return res;
+	}
+
+	template<typename T>
+	static std::vector<std::vector<T>> getDiffMatrix(
+			const std::vector<std::vector<T>>& x1,
+			const std::vector<std::vector<T>>& x2) {
+		int r1, c1, r2, c2;
+		getMatrixSize(x1, r1, c1);
+		getMatrixSize(x2, r2, c2);
+		checkTrue(r1 == r2 && c1 == c2, "Error: Cannot calculate difference of two matrices with different sizes.");
+		std::vector<std::vector<T>> res(r1, std::vector<T>(c1));
+		for (size_t i = 0; i < r1; ++i) {
+			for (size_t j = 0; j < c1; ++j) {
+				res[i][j] = x1[i][j] - x2[i][j];
+			}
+		}
+		return res;
+	}
+
+	template<typename T>
+	static double getFrobeniusNorm(const std::vector<std::vector<T>>& m) {
+		checkTrue(isMatrix(m), "Error: input is not a matrix.");
+		double sum = 0;
+		for (size_t i = 0; i < m.size(); ++i) {
+			for (size_t j = 0; j < m[i].size(); ++j) {
+				sum += m[i][j] * m[i][j];
+			}
+		}
+		return sqrt(sum);
+	}
+
+	template <typename T>
+	static std::vector<std::vector<T>> getMin(const std::vector<std::vector<T>>& m1,
+			const std::vector<std::vector<T>>& m2) {
+		int r1, c1, r2, c2;
+		getMatrixSize(m1, r1, c1);
+		getMatrixSize(m2, r2, c2);
+		checkTrue(r1 == r2 && c1 == c2, "Error: Cannot calculate minimum of two matrices with different sizes.");
+		std::vector<std::vector<T>> res(r1, std::vector<T>(c1));
+		for (size_t i = 0; i < r1; ++i) {
+			for (size_t j = 0; j < c1; ++j) {
+				res[i][j] = std::min(m1[i][j], m2[i][j]);
+			}
+		}
+		return res;
+	}
+
+	template <typename T>
+	static int count(const std::vector<std::vector<T>>& m, const T& x) {
+		int res = 0;
+		for (int i = 0; i < m.size(); ++i) {
+			for (int j = 0; j < m[i].size(); ++j) {
+				if (m[i][j] == x) {
+					++res;
+				}
+			}
+		}
+		return res;
+	}
+
+	template <typename T>
+	static int count(const std::vector<std::vector<T>>& m, const T& x, const T& error) {
+		checkTrue(error > 0, "Error: error must be a positive small number.");
+		int res = 0;
+		for (int i = 0; i < m.size(); ++i) {
+			for (int j = 0; j < m[i].size(); ++j) {
+				if (m[i][j] - x > -error && m[i][j] -x < error) {
+					++res;
+				}
+			}
+		}
+		return res;
+	}
+
+	// Get system usage.
+
+	static std::string getMemoryPeakUsage();
+
+	// Some calculations of a vector.
+	static double getMean(const std::vector<double>& input);
+	static double getDeviation(const std::vector<double>& input, const double& mean);
+
+	template<typename Type>
+	static Type getSum(const std::vector<Type>& input) {
+		Type sum = 0;
+		for (int i = 0; i < input.size(); ++i) {
+			sum += input[i];
+		}
+		return sum;
+	}
+	
+	template<typename Type>
 	static std::vector<int> getSortedIndices(const std::vector<Type>& input, const bool& ascending) {
 		struct myclass {
 			int index;
@@ -306,41 +487,12 @@ public:
 		return res;
 	}
 
-	template<typename Type>
-	static std::vector<std::vector<Type>> getSubMatrix(
-			const std::vector<std::vector<Type>>& input, 
-			const std::unordered_set<int>& indices) {
-		if (!isMatrix(input)) {
-			std::cerr << "Error for finding input not an matrix." << std::endl;
-			exit(-1);
-		}
-		std::vector<std::vector<Type>> res;
-		for (int i = 0; i < input.size(); ++i) {
-			if (indices.find(i) != indices.end()) {
-				std::vector<Type> temp;
-				for (int j = 0; j < input[i].size(); ++j) {
-					if (indices.find(j) != indices.end()) {
-						temp.push_back(input[i][j]);
-					}
-				}
-				res.push_back(temp);
-			}
-		}
-		return res;
-	}
 
-	static std::string getMemoryPeakUsage();
-	static double getMean(const std::vector<double>& input);
-	static double getDeviation(const std::vector<double>& input, const double& mean);
 
-	template<typename Type>
-	static Type getSum(const std::vector<Type>& input) {
-		Type sum = 0;
-		for (int i = 0; i < input.size(); ++i) {
-			sum += input[i];
-		}
-		return sum;
-	}
+private:
+	// get all sub directories/files under "dir"
+	// "type" is used to denote whether directories or files are wanted. 4 for directories, 8 for files, and 12 for both.
+	static std::vector<std::string> getAllSubs(const std::string& dir, const int& type);
 };
 
 #endif // NETWORKPROJECT_UTIL_H_

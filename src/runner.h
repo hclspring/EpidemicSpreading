@@ -19,6 +19,7 @@ public:
 	virtual ~Runner() {}
 
 	virtual int run(const Parameter& para) = 0;
+	virtual void help() = 0;
 
 	void set_short_options(const std::string& so) {
 		_short_options = so;
