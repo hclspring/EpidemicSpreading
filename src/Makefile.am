@@ -60,4 +60,6 @@ netjob_SOURCES=	main.cc\
 				step_simulate_evolve.h\
 				step_simulate_evolve.cc\
 				step_determine_relationship.h\
-				step_determine_relationship.cc
+				step_determine_relationship.cc\
+				step_gen_contact_parts.h\
+				step_gen_contact_parts.cc

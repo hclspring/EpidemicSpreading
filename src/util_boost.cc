@@ -69,15 +69,43 @@ std::vector<std::vector<std::string>> UtilBoost::parsePtree2layerAI(const PTree&
 		std::string subdir = it->second.get<std::string>("dir");
 		std::string prefix = it->second.get<std::string>("prefix");
 		std::string range_str = it->second.get<std::string>("range");
-		std::vector<int> range = Util::parseIntegers(range_str, ':');
+//		std::vector<int> range = Util::parseIntegers(range_str, ':');
 		std::string suffix = it->second.get<std::string>("suffix");
-		Util::checkTrue(range.size() == 2, "Error: range must contain two integers splitted by ':'.");
-		Util::checkTrue(range[0] < range[1], "Error: range[0] must be less than range[1].");
+//		Util::checkTrue(range.size() == 2, "Error: range must contain two integers splitted by ':'.");
+//		Util::checkTrue(range[0] < range[1], "Error: range[0] must be less than range[1].");
+		std::vector<int> range_ints = Util::expandInterval(std::vector<std::string>{range_str}, ':');
 		std::vector<std::string> temp_res;
-		for (int i = range[0]; i < range[1]; ++i) {
-			temp_res.push_back(subdir + "/" + prefix + Util::getPartString(i, part_str_length) + suffix);
+		for (int i = 0; i < range_ints.size(); ++i) {
+			temp_res.push_back(subdir + "/" + prefix + Util::getPartString(range_ints[i], part_str_length) + suffix);
 		}
 		res.push_back(temp_res);
+	}
+	return res;
+}
+
+std::vector<std::vector<std::string>> UtilBoost::parsePtree2layerAI2(const PTree& ptree, const int& part_str_length) {
+	std::vector<std::vector<std::string>> res;
+	PTree ptree_dates = ptree.get_child("dates");
+	PTree ptree_parts = ptree.get_child("parts");
+//	PTree ptree_pattern = ptree.get_child("pattern");
+	std::vector<std::string> date_strs, raw_parts;
+	std::vector<int> part_ints;
+	for (PTree::iterator it = ptree_dates.begin(); it != ptree_dates.end(); ++it) {
+		date_strs.push_back(it->second.get<std::string>(""));
+	}
+	for (PTree::iterator it = ptree_parts.begin(); it != ptree_parts.end(); ++it) {
+		raw_parts.push_back(it->second.get<std::string>(""));
+	}
+	part_ints = Util::expandInterval(raw_parts, ':');
+	std::string pattern_str = ptree.get<std::string>("pattern");
+//	std::cout << pattern_str << std::endl;
+	res.resize(date_strs.size(), std::vector<std::string>(part_ints.size()));
+	for (int i = 0; i < res.size(); ++i) {
+		for (int j = 0; j < res[i].size(); ++j) {
+			res[i][j] = pattern_str;
+			Util::replace_all(res[i][j], "${date}", date_strs[i]);
+			Util::replace_all(res[i][j], "${part}", Util::getPartString(part_ints[i], part_str_length));
+		}
 	}
 	return res;
 }

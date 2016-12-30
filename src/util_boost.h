@@ -25,6 +25,7 @@ public:
 	static std::vector<std::string> parsePtree1layerAI(const PTree& ptree, const int& part_str_length);
 	static std::vector<std::vector<std::string>> parsePtree2layer(const PTree& ptree);
 	static std::vector<std::vector<std::string>> parsePtree2layerAI(const PTree& ptree, const int& part_str_length); // used for default
+	static std::vector<std::vector<std::string>> parsePtree2layerAI2(const PTree& ptree, const int& part_str_length);
 
 };
 

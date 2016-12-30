@@ -16,6 +16,22 @@ void Util::checkFalse(bool condition_not_to_satisfy, const std::string& error_in
 	checkTrue(!condition_not_to_satisfy, error_info);
 }
 
+int Util::replace_first(std::string& original, const std::string& source, const std::string& target) {
+	int pos = 0;
+	if ((pos = original.find(source.c_str())) != std::string::npos) {
+		original.replace(pos, source.size(), target);
+		return pos;
+	} else {
+		return -1;
+	}
+}
+	
+void Util::replace_all(std::string& original, const std::string& source, const std::string& target) {
+	int pos = -1;
+	do {
+		pos = replace_first(original, source, target);
+	} while (pos >= 0);
+}
 
 std::vector<std::string> Util::addSamePrefix(const std::string& prefix, const std::vector<std::string>& strs) {
 	std::vector<std::string> res(strs.size());
@@ -36,6 +52,38 @@ std::vector<int> Util::parseIntegers(const std::string& str, const char& split) 
 		next_split = str.find_first_of(split, index_split);
 	}
 	res.push_back(std::stoi(str.substr(index_split)));
+	return res;
+}
+
+/*
+std::vector<int> Util::expandInterval(const int& begin, const int& end) {
+	Util::checkTrue(begin < end
+	if (begin > end) {
+		return expandInterval(end, begin);
+	} else {
+		std::vector<int> res;
+		for (int i = begin; i <= end; ++i) {
+			res.push_back(i);
+		}
+		return res;
+	}
+}
+*/
+std::vector<int> Util::expandInterval(const std::vector<std::string>& strs, const char& split) {
+	std::vector<int> res;
+	for (int i = 0; i < strs.size(); ++i) {
+		std::vector<int> temp = parseIntegers(strs[i], split);
+		if (temp.size() == 1) {
+			res.push_back(std::stoi(strs[i]));
+		} else if (temp.size() == 2) {
+			Util::checkTrue(temp[0] <= temp[1], "Error: first integer > second integer in the string \"" + strs[i] + "\".");
+			for (int j = temp[0]; j <= temp[1]; ++j) {
+				res.push_back(j);
+			}
+		} else {
+			Util::checkTrue(false, "Error: parsing string \"" + strs[i] + "\".");
+		}
+	}
 	return res;
 }
 
@@ -223,7 +271,7 @@ double Util::choose(const int& n, const int& k) {
 			for (int kk = std::min(nn - 1, k); kk >= 1; --kk) {
 				a[kk] += a[kk-1];
 			}
-			std::cout << a[k] << std::endl;
+//			std::cout << a[k] << std::endl;
 		}
 		return a[k];
 	}

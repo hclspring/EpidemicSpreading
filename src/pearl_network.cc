@@ -8,7 +8,7 @@
 #include "util_boost.h"
 
 PearlNetwork::PearlNetwork(const Parameter& para) : Network(para) {
-	std::vector<std::vector<std::string>> filenames = UtilBoost::parsePtree2layerAI(
+	std::vector<std::vector<std::string>> filenames = UtilBoost::parsePtree2layerAI2(
 			UtilBoost::jsonFile2Ptree(para.get_net_injson()), para.get_part_str_length());
 	for (int i = 0; i < filenames.size(); ++i) {
 		std::vector<UGraphPtr> gs;
@@ -81,5 +81,31 @@ std::shared_ptr<UndirectedGraph> PearlNetwork::get_undirected_graph(const int& d
 	}
 }
 
+ContactInfo PearlNetwork::get_contact_info(const std::string& node1, const std::string& node2) const {
+	ContactInfo res;
+	std::get<0>(res) = node1;
+	std::get<1>(res) = node2;
+	BoolVecVecType bool_vec_vec(get_days(), std::vector<bool>(get_parts()));
+	for (int i = 0; i < bool_vec_vec.size(); ++i) {
+		for (int j = 0; j < bool_vec_vec[i].size(); ++j) {
+			bool_vec_vec[i][j] = get_undirected_graph(i, j)->is_connected(node1, node2);
+		}
+	}
+	std::get<2>(res) = std::move(bool_vec_vec);
+	return res;
+}
 
+std::vector<ContactInfo> PearlNetwork::get_contact_info(const std::string& nodename) {
+	NeighborList neighbor_list = get_merged_graph()->get_neighbor_list(nodename);
+	std::vector<ContactInfo> res;
+	for (NeighborList::iterator it = neighbor_list.begin(); it != neighbor_list.end(); ++it) {
+		res.push_back(get_contact_info(nodename, it->get_name()));
+	}
+	return res;
+}
+
+std::vector<ContactInfo> PearlNetwork::get_all_contact_info() {
+	//TODO
+	//A-B，那么不考虑B-A
+}
 

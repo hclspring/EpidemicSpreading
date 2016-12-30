@@ -33,8 +33,12 @@ public:
 	}
 
 	// Deal with strings
+	static int replace_first(std::string& original, const std::string& source, const std::string& target);
+	static void replace_all(std::string& original, const std::string& source, const std::string& target);
 	static std::vector<std::string> addSamePrefix(const std::string&, const std::vector<std::string>&);
 	static std::vector<int> parseIntegers(const std::string&, const char& split);
+//	static std::vector<int> expandInterval(const int& begin, const int& end);
+	static std::vector<int> expandInterval(const std::vector<std::string>&, const char& split);
 	static std::string getPartString(const int& val, const int& min_length);
 
 	// Deal with files

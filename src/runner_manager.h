@@ -39,6 +39,7 @@ public:
 		std::cout << "\t* step_reindex_gml: [ONLY FOR STATIC] reindex node id in the gml file so that ids are given continuously from 0\n";
 		std::cout << "\t* step_select_nelder_mead_solutions: find the solutions which satisfy constraints.\n";
 		std::cout << "\t* step_determine_relationship: determine the relationship between eating graph and friendship.\n";
+		std::cout << "\t* step_gen_contact_parts: generate yes/no of every contact in all parts; net type is restricted as PEARL.\n";
 		std::cout << "For help information of any JOBNAME, use the command:\n";
 		std::cout << "\t\t ./netjob JOBNAME -h\n";
 		std::cout << "or\n";
