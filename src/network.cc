@@ -72,6 +72,57 @@ bool Network::check_part_index(const int& part_index) const {
 	return part_index >= 0 && part_index < _parts;
 }
 
+ContactInfo Network::get_contact_info(const std::string& node1, const std::string& node2) {
+	ContactInfo res;
+	Util::checkTrue(get_merged_graph()->contains_node(node1), "Error: node " + node1 + " does not exist.");
+	Util::checkTrue(get_merged_graph()->contains_node(node2), "Error: node " + node2 + " does not exist.");
+	std::get<0>(res) = node1;
+	std::get<1>(res) = node2;
+	DoubleVecVecType vec_vec(get_days(), std::vector<double>(get_parts()));
+	for (int i = 0; i < vec_vec.size(); ++i) {
+		for (int j = 0; j < vec_vec[i].size(); ++j) {
+			vec_vec[i][j] = get_undirected_graph(i, j)->is_connected(node1, node2) ? get_undirected_graph(i, j)->get_edge_weight(node1, node2) : 0;
+		}
+	}
+	std::get<2>(res) = std::move(vec_vec);
+	return res;
+}
+
+std::vector<ContactInfo> Network::get_contact_info(const std::string& nodename) {
+	Util::checkTrue(get_merged_graph()->contains_node(nodename), "Error: node " + nodename + " does not exist.");
+	NeighborList neighbor_list = get_merged_graph()->get_neighbor_list(nodename);
+	std::vector<ContactInfo> res;
+	for (NeighborList::iterator it = neighbor_list.begin(); it != neighbor_list.end(); ++it) {
+		res.push_back(get_contact_info(nodename, it->get_name()));
+	}
+	return res;
+}
+
+std::vector<ContactInfo> Network::get_all_contact_info() {
+	NodeVec all_nodes_vec = get_merged_graph()->get_node_names_vec();
+	std::sort(all_nodes_vec.begin(), all_nodes_vec.end());
+	std::vector<ContactInfo> res;
+	for (int i = 0; i < all_nodes_vec.size(); ++i) {
+		NeighborList neighbor_list = get_merged_graph()->get_neighbor_list(all_nodes_vec[i]);
+		for (NeighborList::iterator it = neighbor_list.begin(); it != neighbor_list.end(); ++it) {
+			if (all_nodes_vec[i].compare(it->get_name()) > 0) {
+				res.push_back(get_contact_info(all_nodes_vec[i], it->get_name()));
+			}
+		}
+	}
+	return res;
+}
+
+void Network::write_all_contact_info(const std::vector<ContactInfo>& all_contact_info, const std::string& output) const {
+	std::string mkdir_command = "mkdir -p " + output;
+	int temp = system(mkdir_command.c_str());
+	for (int i = 0; i < all_contact_info.size(); ++i) {
+		std::string filename = std::get<0>(all_contact_info[i]) + "-" + std::get<1>(all_contact_info[i]);
+		Util::writeLines(Util::getLines(std::get<2>(all_contact_info[i]), " "), output + "/" + filename);
+	}
+}
+
+
 void Network::update_node_map() {
 	_node_name2index.clear();
 	for (int i = 0; i < _nodes.size(); ++i) {

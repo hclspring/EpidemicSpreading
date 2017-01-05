@@ -56,6 +56,30 @@ public:
 		ofs.close();
 	}
 
+	// Vector --> Line(s)
+	template <typename T>
+	static std::string getLine(const std::vector<T>& vec, const std::string& split) {
+		std::string res;
+		if (vec.size() > 0) {
+			res.append(std::to_string(vec[0]));
+		}
+		for (int i = 1; i < vec.size(); ++i) {
+			res.append(split);
+			res.append(std::to_string(vec[i]));
+		}
+		return res;
+	}
+	
+	template <typename T>
+	static std::vector<std::string> getLines(const std::vector<std::vector<T>>& vec_vec, const std::string& split) {
+		std::vector<std::string> res;
+		for (int i = 0; i < vec_vec.size(); ++i) {
+			res.push_back(getLine(vec_vec[i], split));
+		}
+		return res;
+	}
+
+
 	// Deal with file system
 	static std::vector<std::string> getAllDirPaths(const std::string& root_dir, const int& layer);
 	static std::vector<std::string> getAllSubDirPaths(const std::string& root_dir, const int& layer);

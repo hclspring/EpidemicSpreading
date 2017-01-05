@@ -22,6 +22,9 @@ typedef std::unordered_set<int> IndexSet;
 typedef std::vector<std::string> NodeVec;
 typedef std::unordered_map<std::string, int> NodeNameIndexMap;
 typedef std::list<NeighborInfo> NeighborList;
+typedef std::vector<std::vector<bool>> BoolVecVecType;
+typedef std::vector<std::vector<double>> DoubleVecVecType;
+typedef std::tuple<std::string, std::string, DoubleVecVecType> ContactInfo;
 
 class Network {
 protected:
@@ -52,6 +55,10 @@ public:
 	virtual NeighborList get_neighbor_list(const std::string& nodename, const int& day_index, const int& part_index) const = 0;
 	virtual std::shared_ptr<UndirectedGraph> get_merged_graph() = 0;
 	virtual std::shared_ptr<UndirectedGraph> get_undirected_graph(const int& day_index, const int& part_index) const = 0;
+	ContactInfo get_contact_info(const std::string& node1, const std::string& node2);
+	std::vector<ContactInfo> get_contact_info(const std::string& nodename);
+	std::vector<ContactInfo> get_all_contact_info(); // return all contact info without those pairs which do not have contact at any time, and without those pairs whose second node < first node.
+	void write_all_contact_info(const std::vector<ContactInfo>& all_contact_info, const std::string& output) const;
 	
 protected:
 	void update_node_map();

@@ -49,6 +49,8 @@ void StepGenContactParts::help() {
 int StepGenContactParts::run(const Parameter& para) {
 	// Read network
 	std::shared_ptr<Network> net = std::make_shared<PearlNetwork>(para);
+	std::vector<ContactInfo> all_contact_info = net->get_all_contact_info();
+	net->write_all_contact_info(all_contact_info, para.get_out_dir());
 
 	/*
 	bool is_tree = net->get_merged_graph()->is_tree();
