@@ -56,6 +56,8 @@ private:
 	std::string _if {""};
 	std::string _ie {""};
 
+	int _merge_parts {1};
+
 public:
 	Parameter();
 	Parameter(const Parameter& para);
@@ -96,6 +98,7 @@ public:
 	double get_evolve_para_b () const { return _evolve_para_b; }
 	std::string get_if() const { return _if; }
 	std::string get_ie() const { return _ie; }
+	int get_merge_parts() const { return _merge_parts; }
 
 public:
 	/* 
@@ -144,6 +147,7 @@ public:
 	int set_evolve_para_b(const std::string& val);
 	int set_if(const std::string& val);
 	int set_ie(const std::string& val);
+	int set_merge_parts(const std::string& val);
 
 public:
 	int set_net_type(const NetType& net_type);
@@ -170,6 +174,7 @@ public:
 	int set_evolve_para_alpha(const double& evolve_para_alpha);
 	int set_evolve_para_a(const double& evolve_para_a);
 	int set_evolve_para_b(const double& evolve_para_b);
+	int set_merge_parts(const int& merge_parts);
 };
 
 

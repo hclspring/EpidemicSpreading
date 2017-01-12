@@ -56,6 +56,7 @@ enum OptionKey {
 	OPT_EVOLVE_PARA_B,
 	OPT_IF,
 	OPT_IE,
+	OPT_MERGE_PARTS,
 };
 
 

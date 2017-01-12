@@ -72,41 +72,46 @@ bool Network::check_part_index(const int& part_index) const {
 	return part_index >= 0 && part_index < _parts;
 }
 
-ContactInfo Network::get_contact_info(const std::string& node1, const std::string& node2) {
+ContactInfo Network::get_contact_info(const std::string& node1, const std::string& node2, const int& merge_parts) {
 	ContactInfo res;
 	Util::checkTrue(get_merged_graph()->contains_node(node1), "Error: node " + node1 + " does not exist.");
 	Util::checkTrue(get_merged_graph()->contains_node(node2), "Error: node " + node2 + " does not exist.");
+	Util::checkTrue(merge_parts > 0, "Error: try to merge " + std::to_string(merge_parts) + " parts.");
 	std::get<0>(res) = node1;
 	std::get<1>(res) = node2;
-	DoubleVecVecType vec_vec(get_days(), std::vector<double>(get_parts()));
+	int total_parts = get_parts();
+	int res_parts = ceil(total_parts / merge_parts);
+	DoubleVecVecType vec_vec(get_days(), std::vector<double>(res_parts, 0));
 	for (int i = 0; i < vec_vec.size(); ++i) {
-		for (int j = 0; j < vec_vec[i].size(); ++j) {
-			vec_vec[i][j] = get_undirected_graph(i, j)->is_connected(node1, node2) ? get_undirected_graph(i, j)->get_edge_weight(node1, node2) : 0;
+		for (int j = 0; j < total_parts; ++j) {
+			double delta = get_undirected_graph(i, j)->is_connected(node1, node2) ? get_undirected_graph(i, j)->get_edge_weight(node1, node2) : 0;
+			vec_vec[i][floor(j / merge_parts)] += delta;
 		}
 	}
-	std::get<2>(res) = std::move(vec_vec);
+	std::get<2>(res) = vec_vec;
 	return res;
 }
 
-std::vector<ContactInfo> Network::get_contact_info(const std::string& nodename) {
+std::vector<ContactInfo> Network::get_contact_info(const std::string& nodename, const int& merge_parts) {
 	Util::checkTrue(get_merged_graph()->contains_node(nodename), "Error: node " + nodename + " does not exist.");
+	Util::checkTrue(merge_parts > 0, "Error: try to merge " + std::to_string(merge_parts) + " parts.");
 	NeighborList neighbor_list = get_merged_graph()->get_neighbor_list(nodename);
 	std::vector<ContactInfo> res;
 	for (NeighborList::iterator it = neighbor_list.begin(); it != neighbor_list.end(); ++it) {
-		res.push_back(get_contact_info(nodename, it->get_name()));
+		res.push_back(get_contact_info(nodename, it->get_name(), merge_parts));
 	}
 	return res;
 }
 
-std::vector<ContactInfo> Network::get_all_contact_info() {
+std::vector<ContactInfo> Network::get_all_contact_info(const int& merge_parts) {
 	NodeVec all_nodes_vec = get_merged_graph()->get_node_names_vec();
 	std::sort(all_nodes_vec.begin(), all_nodes_vec.end());
 	std::vector<ContactInfo> res;
 	for (int i = 0; i < all_nodes_vec.size(); ++i) {
 		NeighborList neighbor_list = get_merged_graph()->get_neighbor_list(all_nodes_vec[i]);
 		for (NeighborList::iterator it = neighbor_list.begin(); it != neighbor_list.end(); ++it) {
-			if (all_nodes_vec[i].compare(it->get_name()) > 0) {
-				res.push_back(get_contact_info(all_nodes_vec[i], it->get_name()));
+			if (all_nodes_vec[i].compare(it->get_name()) < 0) {
+				res.push_back(get_contact_info(all_nodes_vec[i], it->get_name(), merge_parts));
 			}
 		}
 	}

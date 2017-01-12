@@ -118,7 +118,8 @@ OptionKey UtilConstant::int2OptionKey(const int& val) {
 		OPT_EVOLVE_PARA_A,
 		OPT_EVOLVE_PARA_B,
 		OPT_IF,
-		OPT_IE
+		OPT_IE,
+		OPT_MERGE_PARTS
 	};
 	if (val >= 'h' && val < 'h' + vec.size()) {
 		return vec[val - 'h'];

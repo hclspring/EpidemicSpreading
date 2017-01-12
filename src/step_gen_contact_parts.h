@@ -23,7 +23,6 @@ public:
 	virtual int run(const Parameter& para);
 
 private:
-//	void write_result(const std::string& res_dir, const std::vector<SourceIdentificationResV2>& res_structs);
 };
 
 

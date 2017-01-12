@@ -87,7 +87,6 @@ std::vector<std::vector<std::string>> UtilBoost::parsePtree2layerAI2(const PTree
 	std::vector<std::vector<std::string>> res;
 	PTree ptree_dates = ptree.get_child("dates");
 	PTree ptree_parts = ptree.get_child("parts");
-//	PTree ptree_pattern = ptree.get_child("pattern");
 	std::vector<std::string> date_strs, raw_parts;
 	std::vector<int> part_ints;
 	for (PTree::iterator it = ptree_dates.begin(); it != ptree_dates.end(); ++it) {
@@ -98,13 +97,12 @@ std::vector<std::vector<std::string>> UtilBoost::parsePtree2layerAI2(const PTree
 	}
 	part_ints = Util::expandInterval(raw_parts, ':');
 	std::string pattern_str = ptree.get<std::string>("pattern");
-//	std::cout << pattern_str << std::endl;
 	res.resize(date_strs.size(), std::vector<std::string>(part_ints.size()));
 	for (int i = 0; i < res.size(); ++i) {
 		for (int j = 0; j < res[i].size(); ++j) {
 			res[i][j] = pattern_str;
 			Util::replace_all(res[i][j], "${date}", date_strs[i]);
-			Util::replace_all(res[i][j], "${part}", Util::getPartString(part_ints[i], part_str_length));
+			Util::replace_all(res[i][j], "${part}", Util::getPartString(part_ints[j], part_str_length));
 		}
 	}
 	return res;

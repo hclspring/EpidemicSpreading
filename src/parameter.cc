@@ -43,6 +43,7 @@ Parameter::Parameter(const Parameter& para) {
 	this->_evolve_para_b = para._evolve_para_b;
 	this->_if = para._if;
 	this->_ie = para._ie;
+	this->_merge_parts = para._merge_parts;
 }
 
 Parameter::Parameter(int argc, char*const* argv, 
@@ -88,6 +89,7 @@ int Parameter::set_para(OptionKey opt_key, const std::string& opt_val) {
 		case OPT_FD_FUNC:					return set_fd_func(opt_val);
 		case OPT_IF:						return set_if(opt_val);
 		case OPT_IE:						return set_ie(opt_val);
+		case OPT_MERGE_PARTS:				return set_merge_parts(opt_val);
 		default:							return -1;
 	}
 }
@@ -243,6 +245,10 @@ int Parameter::set_ie(const std::string& val) {
 	return 0;
 }
 
+int Parameter::set_merge_parts(const std::string& val) {
+	_merge_parts = std::stoi(val);
+	return 0;
+}
 
 
 
@@ -342,7 +348,10 @@ int Parameter::set_evolve_para_b(const double& evolve_para_b) {
 	this->_evolve_para_b = evolve_para_b;
 	return 0;
 }
-
+int Parameter::set_merge_parts(const int& merge_parts) {
+	this->_merge_parts = merge_parts;
+	return 0;
+}
 
 
 
