@@ -1,0 +1,17 @@
+aclocal.m4
+autom4te.cache/*
+compile
+config.*
+configure
+depcomp
+.gitignore.swp
+install-sh
+Makefile
+Makefile.in
+missing
+src/*.o
+src/*.swp
+src/Makefile.in
+src/.deps/*
+src/netjob
+stamp-h1
