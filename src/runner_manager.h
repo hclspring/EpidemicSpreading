@@ -32,6 +32,7 @@ public:
 		std::cout << "\tPossible values of JOBNAME are:\n";
 		std::cout << "\t* step_source_identification: for source identification. But this version has problems: 1) too slow; 2) different methods use different problem inputs.\n";
 		std::cout << "\t* step_source_identification_v2: USE THIS VERSION instead.\n";
+		std::cout << "\t* step_epidemic_simulation: simulate epidemic disease transmission, with only one seed selected randomly.\n";
 		std::cout << "\t* step_get_small_component: [ONLY FOR PEARL] for two-node components and three-node components, find the start part and parts of duration if the part and the duration satisfy some constraints.\n";
 		std::cout << "\t* step_calc_static_feature: [ONLY FOR STATIC] calculate network feature\n";
 		std::cout << "\t* step_evolve_large_component: [ONLY FOR DYNAMIC] find the best parameters to generate these large components\n";
