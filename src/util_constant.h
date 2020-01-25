@@ -23,7 +23,7 @@ public:
 	static bool isInfected(const DiseaseModel& disease, const DiseaseStage& stage);
 	static bool isInfectious(const DiseaseModel& disease, const DiseaseStage& stage);
 	static bool hasBeenInfected(const DiseaseModel& disease, const DiseaseStage& stage);
-	static std::vector<DiseaseStage> getUnstableStages(const DiseaseModel& disease);
+	static std::vector<DiseaseStage> getUnstableStages(const DiseaseModel& disease);// When there exists people in these stages, some people may change their status in the future, e.g. get infected, or recovered, in other words, the disease is still in spreading process.
 	static bool isStable(const DiseaseModel& disease, const std::vector<DiseaseStage>& stages, const std::vector<DiseaseStage>& unstable_stages);
 	static DiseaseStage getInitialInfectedStage(const DiseaseModel& disease);
 

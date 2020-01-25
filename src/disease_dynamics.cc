@@ -89,6 +89,44 @@ DiseaseStage DiseaseDynamics::sir_get_next_status_bycontact(const Parameter& par
 	}
 }
 
+DiseaseStage DiseaseDynamics::seir_get_next_status_byself(const Parameter& para, const DiseaseStage& cur_stage, const double& seconds) {
+	switch (cur_stage) {
+		case EXPOSED:
+			if (Util::gen_rand_double() < get_prob(para.get_infectious_rate(), para.get_infectious_rate_seconds(), seconds)) {
+				return INFECTIOUS;
+			} else {
+				return EXPOSED;
+			}
+		case INFECTIOUS:
+			if (Util::gen_rand_double() < get_prob(para.get_recover_rate(), para.get_recover_rate_seconds(), seconds)) {
+				return RECOVERED;
+			} else {
+				return INFECTIOUS;
+			}
+		default: return cur_stage;
+	}
+}
+
+DiseaseStage DiseaseDynamics::seir_get_next_status_bycontact(const Parameter& para, const DiseaseStage& cur_stage, const std::list<double>& seconds) {
+	switch (cur_stage) {
+		case SUSCEPTIBLE:
+			if (Util::gen_rand_double() < get_prob(para.get_infect_rate(), para.get_infect_rate_seconds(), seconds)) {
+				return EXPOSED;
+			} else {
+				return SUSCEPTIBLE;
+			}
+		default: return cur_stage;
+	}
+}
+
+DiseaseStage DiseaseDynamics::seir2019_get_next_status_byself(const Parameter& para, const DiseaseStage& cur_stage, const double& seconds) {
+	return seir_get_next_status_byself(para, cur_stage, seconds);
+}
+
+DiseaseStage DiseaseDynamics::seir2019_get_next_status_bycontact(const Parameter& para, const DiseaseStage& cur_stage, const std::list<double>& seconds) {
+	return seir_get_next_status_bycontact(para, cur_stage, seconds);
+}
+
 
 double DiseaseDynamics::get_prob(const double& para_prob, const double& para_sec, const double& seconds) {
 	return 1 - pow(1 - para_prob, seconds / para_sec);

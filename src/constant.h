@@ -13,7 +13,8 @@ enum DiseaseModel {
 	SI,
 	SIS,
 	SIR,
-	SEIR,
+	SEIR, // original SEIR model (uninfectious in E state)
+	SEIR2019, // new SEIR model adapted to 2019-nCov (infectious in E state)
 };
 
 const size_t OPTION_KEY_MAXSIZE = 100;

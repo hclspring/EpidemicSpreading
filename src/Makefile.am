@@ -62,4 +62,6 @@ netjob_SOURCES=	main.cc\
 				step_determine_relationship.h\
 				step_determine_relationship.cc\
 				step_gen_contact_parts.h\
-				step_gen_contact_parts.cc
+				step_gen_contact_parts.cc\
+				step_epidemic_simulation.h\
+				step_epidemic_simulation.cc

@@ -26,6 +26,10 @@ DiseaseModel UtilConstant::toDiseaseModel(const std::string& val) {
 		return SIS;
 	} else if (lowercase.compare("sir") == 0) {
 		return SIR;
+	} else if (lowercase.compare("seir") == 0) {
+		return SEIR;
+	} else if (lowercase.compare("seir2019") == 0) {
+		return SEIR2019;
 	} else {
 		std::cerr << "Error parsing string: " << val << std::endl;
 		exit(-1);
@@ -153,6 +157,7 @@ bool UtilConstant::isInfected(const DiseaseModel& disease, const DiseaseStage& s
 				 case SIS:
 					 return false;
 				 case SEIR:
+				 case SEIR2019:
 					 return true;
 				 default:
 					 std::cerr << "Error: unknown DiseaseModel." << std::endl;
@@ -163,7 +168,9 @@ bool UtilConstant::isInfected(const DiseaseModel& disease, const DiseaseStage& s
 }
 
 bool UtilConstant::isInfectious(const DiseaseModel& disease, const DiseaseStage& stage) {
-	return stage == INFECTIOUS;
+	if (stage == INFECTIOUS) return true;
+	else if (stage == EXPOSED && disease == SEIR2019) return true;
+	else return false;
 }
 
 bool UtilConstant::hasBeenInfected(const DiseaseModel& disease, const DiseaseStage& stage) {
@@ -171,7 +178,8 @@ bool UtilConstant::hasBeenInfected(const DiseaseModel& disease, const DiseaseSta
 		case SI: if (stage == INFECTIOUS) return true; else return false;
 		case SIR: if (stage == INFECTIOUS || stage == RECOVERED) return true; else return false;
 		case SIS: if (stage == INFECTIOUS) return true; else return false;
-		case SEIR: if (stage == EXPOSED || stage == INFECTIOUS || stage == RECOVERED) {
+		case SEIR:
+		case SEIR2019: if (stage == EXPOSED || stage == INFECTIOUS || stage == RECOVERED) {
 					   return true;
 				   } else {
 					   return false;
@@ -190,6 +198,7 @@ std::vector<DiseaseStage> UtilConstant::getUnstableStages(const DiseaseModel& di
 		case SIR:
 			res.push_back(INFECTIOUS); break;
 		case SEIR:
+		case SEIR2019:
 			res.push_back(INFECTIOUS); res.push_back(EXPOSED); break;
 		default:
 			std::cerr << "Error: unknown DiseaseModel." << std::endl;
@@ -217,6 +226,7 @@ DiseaseStage UtilConstant::getInitialInfectedStage(const DiseaseModel& disease) 
 		case SIR:
 			return INFECTIOUS;
 		case SEIR:
+		case SEIR2019:
 			return EXPOSED;
 		default:
 			std::cerr << "Error: unknown disease." << std::endl;
