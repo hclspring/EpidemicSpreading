@@ -1,4 +1,4 @@
-# NetworkProject
+# EpidemicSpreading
 
 If you found this code useful, please cite 
 [复杂网络上疾病传播溯源算法综述 | A survey on algorithms for epidemic source identification on complex networks](http://cjc.ict.ac.cn/online/onlinepaper/hcl-201861592831.pdf)
